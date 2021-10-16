@@ -35,7 +35,7 @@ public class Page {
 		}
 	}
 	
-	///Mehtod
+	// Method
 	public int getCurrentPage() {
 		return currentPage;
 	}
