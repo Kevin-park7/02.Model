@@ -5,6 +5,7 @@
 
 <%
 	Product vo=(Product)request.getAttribute("vo");
+	User user=(User)session.getAttribute("user");
 
 	String prvHistory = "";
 	// Cookie는 Request, Response를 가지고 불러오기 또는 전달이 이루어진다.
@@ -149,15 +150,18 @@
 				</td>
 				
 				<td background="/images/ct_btnbg02.gif" class="ct_btn01"	style="padding-top: 3px;">
-					<a href="/purchase/addpurchaseView.jsp">구매</a>
+				<%if(user.getUserId().contains("user")){ %>
+					<a href="/addPurchaseView.do?prodNo=<%=vo.getProdNo()%>">구매</a>
+					
 				</td>
 				<td width="14" height="23">
 					<img src="/images/ct_btnbg03.gif" width="14" height="23"/>
 				</td>
+				
 				<td width="17" height="23">
 					<img src="/images/ct_btnbg01.gif" width="17" height="23"/>
 				</td>
-				
+				<%} %>
 				<td background="/images/ct_btnbg02.gif" class="ct_btn01"	style="padding-top: 3px;">
 					<a href="/listProduct.do?menu=search">확인</a>
 				</td>

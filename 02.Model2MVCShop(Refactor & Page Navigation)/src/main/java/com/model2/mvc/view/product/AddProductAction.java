@@ -20,9 +20,9 @@ public class AddProductAction extends Action {
 												HttpServletResponse response) throws Exception {
 		System.out.println("AddProductAction");
 		Product product=new Product();
-		String manuDate = CommonUtil.toSsnStr(request.getParameter("manuDate"));
+		//String manuDate = CommonUtil.toSsnStr(request.getParameter("manuDate"));
 		//System.out.println(">>>> "+request.getParameter("manuDate"));
-		//String manuDate = request.getParameter("manuDate").replace("-", "");
+		String manuDate = request.getParameter("manuDate").replace("-", "");
 		//System.out.println(">>>> "+manuDate);
 		product.setProdName(request.getParameter("prodName"));
 		product.setManuDate(manuDate);	// YYmmdd
