@@ -1,5 +1,9 @@
 package com.model2.mvc.common;
-
+/***
+ * Test
+ * @author ¹Ú¼º¿ø
+ *
+ */
 
 public class Page {
 	

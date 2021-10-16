@@ -84,28 +84,30 @@ public void insertProduct(Product product ) throws Exception {
 		
 		
 		
-		String sql = "select v.* from PRODUCT v  ";
+		String sql = "select v.* from (select rownum rnum, vr.*,TRAN_STATUS_CODE from PRODUCT vr,transaction t where";
 		if (search.getSearchCondition() != null) {
 			System.out.println("ProductDAO: searchCondition Not Null"+search.getSearchCondition());
 			//검색조건이 들어오면
 			if (search.getSearchCondition().equals("0")) {
 				//검색조건이 0번째의 검색조건에 해당하는 상품번호 이면
-				sql += " where PROD_NO like'%" + search.getSearchKeyword()
-						+ "%'";
+				sql += " PROD_NO like'%" + search.getSearchKeyword()
+						+ "%' and";
 			} else if (search.getSearchCondition().equals("1")) {
 				//검색조건이 1번째의 검색조건에 해당하는 상품이름 이면
-				sql += " where PROD_NAME like '%" + search.getSearchKeyword()
-						+ "%'";
+				sql += " PROD_NAME like '%" + search.getSearchKeyword()
+						+ "%' and";
 			} else if (search.getSearchCondition().equals("2")) {
 				//검색조건이 2번째의 검색조건에 해당하는 상품가격 이면
-				sql += " where PRICE like '%" + search.getSearchKeyword()
-						+ "%'";
+				sql += " PRICE like '%" + search.getSearchKeyword()
+						+ "%' and";
 			}
 		}else
 			System.out.println("ProductDAO: searchCondition Null");
 		
-
-		sql += " ORDER BY PROD_NO";
+		sql += " vr.prod_no = t.prod_no(+)";
+		sql += " ORDER BY vr.PROD_NO) v";
+		//sql += " where rnum BETWEEN "+(search.getCurrentPage()*search.getPageSize()-2)+" and "+(search.getCurrentPage()*search.getPageSize());
+		System.out.println("ProductDAO: "+ sql);
 		
 		
 		//==> TotalCount GET
@@ -129,7 +131,8 @@ public void insertProduct(Product product ) throws Exception {
 				vo.setFileName(rs.getString("IMAGE_FILE"));
 				vo.setProdDetail(rs.getString("PROD_DETAIL"));
 				vo.setRegDate(rs.getDate("REG_DATE"));
-				
+				vo.setProTranCode(rs.getString("TRAN_STATUS_CODE"));
+
 				list.add(vo);
 				}
 
