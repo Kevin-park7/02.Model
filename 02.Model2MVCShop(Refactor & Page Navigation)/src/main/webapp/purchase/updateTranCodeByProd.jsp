@@ -1,33 +1,44 @@
 <%@ page language="java" contentType="text/html; charset=EUC-KR"
     pageEncoding="EUC-KR"%>
 
-<%@ page import="java.util.List"  %>
-
+<%@ page import="java.util.*"  %>
 <%@ page import="com.model2.mvc.service.domain.*" %>
-<%@ page import="com.model2.mvc.common.Search" %>
-<%@page import="com.model2.mvc.common.Page"%>
-<%@page import="com.model2.mvc.common.util.CommonUtil"%>
+<%@ page import="com.model2.mvc.common.*" %>
 
 
 <%
-List<Product> list= (List<Product>)request.getAttribute("list");
-Page resultPage=(Page)request.getAttribute("resultPage");
-
-Search search = (Search)request.getAttribute("search");
-//==> null 을 ""(nullString)으로 변경
-String searchCondition = CommonUtil.null2str(search.getSearchCondition());
-String searchKeyword = CommonUtil.null2str(search.getSearchKeyword());
+	HashMap<String,Object> map=(HashMap<String,Object>)request.getAttribute("map");
+	Search searchVO=(Search)request.getAttribute("searchVO");
 	
-String curPageStr = (String) request.getParameter("page");
-int curPage = 1;
-if (curPageStr != null)
-	curPage = Integer.parseInt(curPageStr);
 
-System.out.println(resultPage +"    "+ resultPage.getTotalCount());
-
-String menu = (String) request.getParameter("menu");
-System.out.println(">>>>>>> "+ menu+"    "+ curPage);
-System.out.println("page 확인 >>>>>>>"+(curPage-1)/5);	
+	
+	String menu = (String) request.getParameter("menu");
+	System.out.println(">>>>>>> "+ menu+"    "+ request.getParameter("page"));
+	
+	
+	int total=0;
+	ArrayList<Product> list=null;
+	if(map != null){
+		total=((Integer)map.get("count")).intValue();
+		list=(ArrayList<Product>)map.get("list");
+	}
+	
+	int currentPage=searchVO.getCurrentPage();
+	System.out.println(">>>>>>>>> "+currentPage);
+	int totalPage=0;
+	if(total > 0) {
+		totalPage= total / searchVO.getPageSize() ;
+		if(total%searchVO.getPageSize() >0)
+			totalPage += 1;
+		
+		
+	}
+	
+	
+	String curPageStr = (String) request.getParameter("page");
+	int curPage = 1;
+	if (curPageStr != null)
+		curPage = Integer.parseInt(curPageStr);
 	
 %>
 <html>
@@ -73,17 +84,44 @@ System.out.println("page 확인 >>>>>>>"+(curPage-1)/5);
 
 			<table width="100%" border="0" cellspacing="0" cellpadding="0"
 				style="margin-top: 10px;">
-				<td align="right">
-						<select name="searchCondition" class="ct_input_g" style="width:80px">
-				
-			
-							<option value="0" <%= (searchCondition.equals("0") ? "selected" : "")%>>상품번호</option>
-							<option value="1" <%= (searchCondition.equals("1") ? "selected" : "")%>>상품명</option>
-							<option value="2" <%= (searchCondition.equals("2") ? "selected" : "")%>>상품가격</option>						
-				</select>
-				 <input type="text" name="searchKeyword" value="<%= searchKeyword %>" class="ct_input_g"
+				<%
+				if(searchVO.getSearchCondition() != null) {
+			%>
+				<td align="right"><select name="searchCondition"
+					class="ct_input_g" style="width: 80px">
+						<%
+						if(searchVO.getSearchCondition().equals("0")){
+				%>
+						<option value="0" selected>상품번호</option>
+						<option value="1">상품명</option>
+						<option value="2">상품가격</option>
+						<%
+						}else {
+				%>
+						<option value="0">상품번호</option>
+						<option value="1">상품명</option>
+						<option value="2" selected>상품가격</option>
+						<%
+						}
+				%>
+				</select> <input type="text" name="searchKeyword"
+					value="<%=searchVO.getSearchKeyword() %>" class="ct_input_g"
 					style="width: 200px; height: 19px"></td>
-			
+				<%
+				}else{
+			%>
+
+
+				<td align="right"><select name="searchCondition"
+					class="ct_input_g" style="width: 80px">
+						<option value="0">상품번호</option>
+						<option value="1">상품명</option>
+						<option value="2">상품가격</option>
+				</select> <input type="text" name="searchKeyword" class="ct_input_g"
+					style="width: 200px; height: 19px" /></td>
+				<%
+				}
+			%>
 				<td align="right" width="70">
 					<table border="0" cellspacing="0" cellpadding="0">
 						<tr>
@@ -104,7 +142,7 @@ System.out.println("page 확인 >>>>>>>"+(curPage-1)/5);
 			<table width="100%" border="0" cellspacing="0" cellpadding="0"
 				style="margin-top: 10px;">
 				<tr>
-					<td colspan="11">전체  <%= resultPage.getTotalCount() %> 건수,	현재 <%= resultPage.getCurrentPage() %> 페이지
+					<td colspan="11">전체 <%=total %>건수, 현재 <%=currentPage %> 페이지
 					</td>
 				</tr>
 				<tr>
@@ -122,7 +160,7 @@ System.out.println("page 확인 >>>>>>>"+(curPage-1)/5);
 					<td colspan="11" bgcolor="808285" height="1"></td>
 				</tr>
 				<% 	
-				//int no=list.size();
+				int no=list.size();
 				for(int i=0; i<list.size(); i++) {
 					Product vo = (Product)list.get(i);
 			%>
@@ -138,23 +176,9 @@ System.out.println("page 확인 >>>>>>>"+(curPage-1)/5);
 					<td></td>
 					<td align="left"><%=vo.getRegDate() %></td>
 					<td></td>
-					<td align="left">
-					<%if(vo.getProTranCode()==null) {%>
-					제고있음
-					<%}else if (vo.getProTranCode().equals("001")){%>
-					구매 완료 
-					<%} %>
-						<%System.out.println(vo.getProTranCode());
-						if(vo.getProTranCode()==null){%>
-						:<%=vo.getProTranCode() %>:
-						<%}else if(vo.getProTranCode().equals("002")){ %>
-						배송중 조그만기달려!!
-						<%}else if(vo.getProTranCode().equals("001")){ %>
-						<a href="/updateTranCodeByProd.do?prodNo=<%=vo.getProdNo() %>&tranCode=002">배송하기
-						</a>
-						<%}else if(vo.getProTranCode().equals("003")){ %>
-						문앞 확인바람
-						<%} %>
+					<td align="left">재고 없음 <a
+						href="/updateTranCodeByProd.do?prodNo=10002&tranCode=2">재고 없음</a>
+
 					</td>
 				</tr>
 				<tr>
@@ -172,24 +196,24 @@ System.out.println("page 확인 >>>>>>>"+(curPage-1)/5);
 					<%
 					if(((curPage-1)/5)!=0){
 					%>
-					<a href="/listProduct.do?page=<%=((curPage-1)/5)*5 %>&searchCondition=<%= search.getSearchCondition() %>&searchKeyword=<%=search.getSearchKeyword() %>&menu=manage">◀ 이전 </a>
-					<%
+					<a href="/listProduct.do?page=<%=((curPage-1)/5)*5 %>&searchCondition=<%= searchVO.getSearchCondition() %>&searchKeyword=<%=searchVO.getSearchKeyword() %>&menu=manage">◀ 이전 </a>
+					<% 
 					}
 					%>
 					
 					<%
-					 System.out.println("page >>>>"+resultPage.getMaxPage());
+					 System.out.println("page >>>>"+totalPage);
 					 for(int i=((curPage-1)/5)*5+1;i<=(((curPage-1)/5)+1)*5;i++){
 						 int y=i-1%5;
-						if(i <= resultPage.getMaxPage()){
+						if(i <= totalPage){
 					%>
-						<a href="/listProduct.do?page=<%=i%>&searchCondition=<%= search.getSearchCondition() %>&searchKeyword=<%=search.getSearchKeyword() %>&menu=manage"><%=i %> </a>
+						<a href="/listProduct.do?page=<%=i%>&searchCondition=<%= searchVO.getSearchCondition() %>&searchKeyword=<%=searchVO.getSearchKeyword() %>&menu=manage"><%=i %> </a>
 					<%
 						}
 						}
-					 if(((curPage-1)/5) < ((resultPage.getMaxPage()-1)/5)){
+					 if(((curPage-1)/5) < ((totalPage-1)/5)){
 					%>	
-					<a href="/listProduct.do?page=<%=(((curPage-1)/5)+1)*5+1 %>&searchCondition=<%= search.getSearchCondition() %>&searchKeyword=<%=search.getSearchKeyword() %>&menu=mavage">이후 ▶ </a>
+					<a href="/listProduct.do?page=<%=(((curPage-1)/5)+1)*5+1 %>&searchCondition=<%= searchVO.getSearchCondition() %>&searchKeyword=<%=searchVO.getSearchKeyword() %>&menu=manage">이후 ▶ </a>
 					<%} %>
 
 
